@@ -4,8 +4,11 @@ const gameScreen = document.getElementById("gameScreen");
 const walletInput =
     document.getElementById("walletInput");
 
-const telegramUsernameInput =
-    document.getElementById("telegramUsernameInput");
+const playerNameInput =
+    document.getElementById("playerNameInput");
+
+const emailInput =
+    document.getElementById("emailInput");
 
 const saveWalletBtn =
     document.getElementById("saveWalletBtn");
@@ -57,21 +60,6 @@ const walletModal =
 
 const walletTitle =
     document.getElementById("walletTitle");
-
-const walletEntry =
-    document.getElementById("walletEntry");
-
-const walletAddressEntry =
-    document.getElementById("walletAddressEntry");
-
-const savedWalletSection =
-    document.getElementById("savedWalletSection");
-
-const savedWalletText =
-    document.getElementById("savedWalletText");
-
-const savedTelegramText =
-    document.getElementById("savedTelegramText");
 
 const closeWalletBtn =
     document.getElementById("closeWalletBtn");
@@ -384,20 +372,6 @@ function isSolanaAddress(address) {
 
 }
 
-function normalizeTelegramUsername(username) {
-
-    return username.trim().replace(/^@/, "");
-
-}
-
-
-function isTelegramUsername(username) {
-
-    return /^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(username);
-
-}
-
-
 /* =========================
    FIRST VISIT CHECK
 ========================= */
@@ -423,7 +397,7 @@ function checkFirstVisit() {
         !localStorage.getItem("epicoin_next_spin_at");
 
     walletViewBtn.textContent =
-        wallet ? "MY WALLET" : "ADD WALLET";
+        wallet ? "MY DETAILS" : "ADD DETAILS";
 
     if (tasksDone === "true") {
 
@@ -596,57 +570,26 @@ function openWalletModal() {
             "epicoin_wallet"
         );
 
-    const savedTelegram =
+    const savedName =
         localStorage.getItem(
-            "epicoin_telegram_username"
+            "epicoin_player_name"
         );
 
-    walletEntry.classList.toggle(
-        "hidden",
-        Boolean(savedWallet && savedTelegram)
-    );
-
-    savedWalletSection.classList.toggle(
-        "hidden",
-        !savedWallet
-    );
-
-    walletAddressEntry.classList.toggle(
-        "hidden",
-        Boolean(savedWallet)
-    );
-
     walletTitle.textContent =
-        savedWallet
-            ? savedTelegram ? "YOUR ACCOUNT" : "ADD TELEGRAM USERNAME"
-            : "CREATE YOUR ACCOUNT";
-
-    saveWalletBtn.textContent =
-        savedWallet ? "SAVE TELEGRAM" : "SAVE ACCOUNT";
-
-    walletEntry.querySelector(".wallet-note").textContent =
-        savedWallet
-            ? "Add a Telegram username to finish linking your existing wallet."
-            : "Add your Telegram username and Solana wallet to link them to your rewards. These details cannot be changed later.";
+        savedWallet ? "YOUR PLAYER DETAILS" : "SUBMIT YOUR DETAILS";
 
     walletError.textContent = "";
+    walletError.classList.remove("success");
 
-    if (savedWallet) {
+    playerNameInput.value =
+        savedName ||
+        localStorage.getItem("epicoin_telegram_username") ||
+        "";
 
-        savedWalletText.textContent =
-            savedWallet;
+    emailInput.value =
+        localStorage.getItem("epicoin_player_email") || "";
 
-        savedTelegramText.textContent =
-            savedTelegram ? `@${savedTelegram}` : "Not added";
-
-    } else {
-
-        walletInput.value = "";
-
-    }
-
-    telegramUsernameInput.value =
-        savedTelegram ? `@${savedTelegram}` : "";
+    walletInput.value = savedWallet || "";
 
     walletModal.classList.remove("hidden");
 
@@ -670,35 +613,39 @@ saveWalletBtn.addEventListener(
     () => {
 
         walletError.textContent = "";
+        walletError.classList.remove("success");
 
-        const existingWallet =
-            localStorage.getItem("epicoin_wallet");
+        const name =
+            playerNameInput.value.trim();
 
-        const value =
-            existingWallet || walletInput.value.trim();
+        if (!name) {
 
-        const telegramUsername =
-            normalizeTelegramUsername(telegramUsernameInput.value);
-
-        if (!isTelegramUsername(telegramUsername)) {
-
-            walletError.textContent =
-                "Enter a valid Telegram username (5-32 letters, numbers, or underscores).";
-
+            walletError.textContent = "Enter your name or Telegram username.";
             return;
 
         }
 
-        if (!existingWallet && !isSolanaAddress(value)) {
+        const email =
+            emailInput.value.trim();
 
-            walletError.textContent =
-                "Please enter a valid Solana wallet address.";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
 
+            walletError.textContent = "Enter a valid email address.";
             return;
 
         }
 
-        wallet = value;
+        const address =
+            walletInput.value.trim();
+
+        if (!isSolanaAddress(address)) {
+
+            walletError.textContent = "Enter a valid Solana address.";
+            return;
+
+        }
+
+        wallet = address;
 
         localStorage.setItem(
             "epicoin_wallet",
@@ -706,8 +653,13 @@ saveWalletBtn.addEventListener(
         );
 
         localStorage.setItem(
-            "epicoin_telegram_username",
-            telegramUsername
+            "epicoin_player_name",
+            name
+        );
+
+        localStorage.setItem(
+            "epicoin_player_email",
+            email
         );
 
         localStorage.setItem(
@@ -715,14 +667,12 @@ saveWalletBtn.addEventListener(
             wallet
         );
 
-        savedWalletText.textContent = wallet;
-        savedTelegramText.textContent =
-            `@${telegramUsername}`;
-        walletTitle.textContent = "YOUR ACCOUNT";
-        walletEntry.classList.add("hidden");
-        savedWalletSection.classList.remove("hidden");
-        walletAddressEntry.classList.add("hidden");
-        walletViewBtn.textContent = "MY WALLET";
+        walletTitle.textContent = "YOUR PLAYER DETAILS";
+        walletViewBtn.textContent = "MY DETAILS";
+        addWalletAfterSpinBtn.textContent = "EDIT DETAILS";
+        walletError.textContent =
+            "Details saved in this browser. Nothing was sent to a backend.";
+        walletError.classList.add("success");
 
     }
 );
@@ -758,7 +708,7 @@ function getPrizeValue(prize) {
     const jackpotValues = {
         mini: 20_000,
         major: 50_000,
-        grand: 100_000
+        grand: 500_000
     };
 
     if (prize.type !== "normal") {
@@ -990,16 +940,17 @@ spinBtn.addEventListener(
 
             resultWalletNote.textContent =
                 wallet
-                    ? "Your saved wallet is linked to this reward."
-                    : "You can add a wallet later to link it to your reward.";
+                    ? "Your player details are saved in this browser."
+                    : "Submit your details later to associate them with your rewards.";
 
-            addWalletAfterSpinBtn.hidden =
-                Boolean(wallet);
+            addWalletAfterSpinBtn.hidden = false;
+            addWalletAfterSpinBtn.textContent =
+                wallet ? "EDIT DETAILS" : "ADD DETAILS";
 
             walletViewBtn.hidden = false;
 
             walletViewBtn.textContent =
-                wallet ? "MY WALLET" : "ADD WALLET";
+                wallet ? "MY DETAILS" : "ADD DETAILS";
 
 
             resultModal.classList.remove(

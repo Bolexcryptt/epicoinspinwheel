@@ -704,6 +704,18 @@ input:focus {
     margin-top: 7px;
 }
 
+.form-feedback {
+    min-height: 16px;
+    margin-top: 10px;
+    color: #ff8585;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.form-feedback.success {
+    color: #7af0c5;
+}
+
 .saved-wallet {
     margin-top: 15px;
     padding: 14px;

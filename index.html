@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#111111">
-    <title>Epicoin Spin Wheel</title>
+    <title>$POT Lucky Wheels</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -15,9 +15,9 @@
     <header class="header">
         <img src="logo.png" class="logo" alt="Epicoin">
 
-        <h1>EPICOIN SPIN WHEEL</h1>
+        <h1>$POT LUCKY WHEELS</h1>
 
-        <p>Spin once every day. Test your luck.</p>
+        <p>Spin the $POT Lucky Wheel to win up to 500k $POT</p>
     </header>
 
 
@@ -113,7 +113,7 @@
             <span>REPEAT SPIN</span>
 
             <button id="walletViewBtn" class="wallet-view-btn">
-                MY WALLET
+                MY DETAILS
             </button>
 
             <span id="spinStatus">
@@ -170,7 +170,7 @@
 
                 <div class="jackpot grand">
                     <span>GRAND JACKPOT</span>
-                    <strong>100K $POT</strong>
+                    <strong>500K $POT</strong>
                 </div>
 
             </div>
@@ -204,7 +204,7 @@
             </p>
 
             <button id="addWalletAfterSpinBtn" class="main-btn">
-                ADD WALLET
+                ADD DETAILS
             </button>
 
             <button id="closeResultBtn" class="main-btn">
@@ -217,7 +217,7 @@
 
 </div>
 
-<!-- SAVED WALLET -->
+<!-- PLAYER DETAILS -->
 
 <div id="walletModal" class="modal hidden">
 
@@ -229,60 +229,50 @@
 
         <img src="logo.png" alt="Epicoin">
 
-        <p id="walletTitle" class="wallet-title">
-            YOUR WALLET
-        </p>
+        <p id="walletTitle" class="wallet-title">SUBMIT YOUR DETAILS</p>
 
         <div id="walletEntry">
             <p class="wallet-note">
-                Add your Telegram username and Solana wallet to link them to your rewards. These details cannot be changed later.
+                Details are saved in this browser for testing. Nothing is sent to a backend yet.
             </p>
 
-            <label class="wallet-field-label" for="telegramUsernameInput">
-                TELEGRAM USERNAME
+            <label class="wallet-field-label" for="playerNameInput">
+                NAME OR TELEGRAM USERNAME
             </label>
             <input
-                id="telegramUsernameInput"
+                id="playerNameInput"
                 type="text"
-                placeholder="@username"
-                autocomplete="username"
+                placeholder="Your name or @username"
+                autocomplete="name"
+            >
+
+            <label class="wallet-field-label" for="emailInput">
+                EMAIL ADDRESS
+            </label>
+            <input
+                id="emailInput"
+                type="email"
+                placeholder="you@example.com"
+                autocomplete="email"
                 autocapitalize="none"
             >
 
-            <div id="walletAddressEntry">
-                <label class="wallet-field-label" for="walletInput">
-                    SOLANA WALLET ADDRESS
-                </label>
-                <input
-                    id="walletInput"
-                    type="text"
-                    placeholder="Solana wallet address"
-                    autocomplete="off"
-                    autocapitalize="none"
-                >
-            </div>
+            <label class="wallet-field-label" for="walletInput">
+                SOLANA ADDRESS
+            </label>
+            <input
+                id="walletInput"
+                type="text"
+                placeholder="Solana wallet address"
+                autocomplete="off"
+                autocapitalize="none"
+            >
 
             <button id="saveWalletBtn" class="main-btn">
-                SAVE WALLET
+                SUBMIT
             </button>
 
-            <p id="walletError" class="error"></p>
-        </div>
-
-        <div id="savedWalletSection" class="hidden">
-            <div class="saved-wallet">
-                <span>TELEGRAM</span>
-                <strong id="savedTelegramText"></strong>
-            </div>
-
-            <div class="saved-wallet">
-                <span>SOLANA WALLET</span>
-                <strong id="savedWalletText"></strong>
-            </div>
-
-            <p class="wallet-note">
-                This wallet is locked and cannot be changed.
-            </p>
+            <p id="walletError" class="form-feedback" aria-live="polite"></p>
         </div>
 
         <button id="closeWalletBtn2" class="main-btn">
