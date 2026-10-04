@@ -422,8 +422,7 @@ function checkFirstVisit() {
 const tasks = {
     dex: false,
     telegram: false,
-    x: false,
-    "x-likes": false
+    x: false
 };
 
 
@@ -467,24 +466,6 @@ document
                     );
 
                 }
-
-                if (task === "x-likes") {
-
-                    if (!button.dataset.opened) {
-
-                        window.open(
-                            X_LINK,
-                            "_blank"
-                        );
-
-                        button.dataset.opened = "true";
-                        button.textContent = "CONFIRM";
-                        return;
-
-                    }
-
-                }
-
 
                 /*
                     Temporary testing.
