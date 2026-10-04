@@ -21,36 +21,6 @@
     </header>
 
 
-    <!-- WALLET -->
-
-    <section id="walletScreen" class="screen">
-
-        <div class="card">
-
-            <h2>Enter your Solana wallet</h2>
-
-            <p class="muted">
-                Your wallet will be used to receive your $POT reward.
-            </p>
-
-            <input
-                id="walletInput"
-                type="text"
-                placeholder="Solana wallet address"
-                autocomplete="off"
-            >
-
-            <button id="saveWalletBtn" class="main-btn">
-                CONTINUE
-            </button>
-
-            <p id="walletError" class="error"></p>
-
-        </div>
-
-    </section>
-
-
     <!-- TASKS -->
 
     <section id="taskScreen" class="screen hidden">
@@ -105,6 +75,19 @@
 
             </div>
 
+            <div class="task">
+
+                <div>
+                    <strong>Like all posts on X</strong>
+                    <span>Like the posts on the @epicoinai profile, then confirm here.</span>
+                </div>
+
+                <button class="taskBtn" data-task="x-likes">
+                    OPEN
+                </button>
+
+            </div>
+
 
             <button
                 id="continueTaskBtn"
@@ -127,7 +110,7 @@
 
         <div class="game-top">
 
-            <span>DAILY SPIN</span>
+            <span>REPEAT SPIN</span>
 
             <button id="walletViewBtn" class="wallet-view-btn">
                 MY WALLET
@@ -162,6 +145,11 @@
         <button id="spinBtn" class="spin-btn">
             SPIN THE WHEEL
         </button>
+
+        <div class="balance-display">
+            <span>$POT BALANCE</span>
+            <strong id="balanceAmount">0 $POT</strong>
+        </div>
 
 
         <div class="jackpots">
@@ -211,9 +199,13 @@
 
             <h2 id="prizeText"></h2>
 
-            <p class="muted">
-                Your reward has been recorded.
+            <p id="resultWalletNote" class="muted">
+                You can add a wallet later to link it to your reward.
             </p>
+
+            <button id="addWalletAfterSpinBtn" class="main-btn">
+                ADD WALLET
+            </button>
 
             <button id="closeResultBtn" class="main-btn">
                 DONE
@@ -237,17 +229,61 @@
 
         <img src="logo.png" alt="Epicoin">
 
-        <p class="wallet-title">
+        <p id="walletTitle" class="wallet-title">
             YOUR WALLET
         </p>
 
-        <div class="saved-wallet">
-            <span id="savedWalletText"></span>
+        <div id="walletEntry">
+            <p class="wallet-note">
+                Add your Telegram username and Solana wallet to link them to your rewards. These details cannot be changed later.
+            </p>
+
+            <label class="wallet-field-label" for="telegramUsernameInput">
+                TELEGRAM USERNAME
+            </label>
+            <input
+                id="telegramUsernameInput"
+                type="text"
+                placeholder="@username"
+                autocomplete="username"
+                autocapitalize="none"
+            >
+
+            <div id="walletAddressEntry">
+                <label class="wallet-field-label" for="walletInput">
+                    SOLANA WALLET ADDRESS
+                </label>
+                <input
+                    id="walletInput"
+                    type="text"
+                    placeholder="Solana wallet address"
+                    autocomplete="off"
+                    autocapitalize="none"
+                >
+            </div>
+
+            <button id="saveWalletBtn" class="main-btn">
+                SAVE WALLET
+            </button>
+
+            <p id="walletError" class="error"></p>
         </div>
 
-        <p class="wallet-note">
-            This wallet is locked and cannot be changed.
-        </p>
+        <div id="savedWalletSection" class="hidden">
+            <div class="saved-wallet">
+                <span>TELEGRAM</span>
+                <strong id="savedTelegramText"></strong>
+            </div>
+
+            <div class="saved-wallet">
+                <span>SOLANA WALLET</span>
+                <strong id="savedWalletText"></strong>
+            </div>
+
+            <p class="wallet-note">
+                This wallet is locked and cannot be changed.
+            </p>
+        </div>
 
         <button id="closeWalletBtn2" class="main-btn">
             CLOSE

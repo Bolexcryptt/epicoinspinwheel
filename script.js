@@ -1,9 +1,11 @@
-const walletScreen = document.getElementById("walletScreen");
 const taskScreen = document.getElementById("taskScreen");
 const gameScreen = document.getElementById("gameScreen");
 
 const walletInput =
     document.getElementById("walletInput");
+
+const telegramUsernameInput =
+    document.getElementById("telegramUsernameInput");
 
 const saveWalletBtn =
     document.getElementById("saveWalletBtn");
@@ -19,6 +21,9 @@ const taskMessage =
 
 const spinBtn =
     document.getElementById("spinBtn");
+
+const balanceAmount =
+    document.getElementById("balanceAmount");
 
 const wheel =
     document.getElementById("wheel");
@@ -38,14 +43,35 @@ const prizeText =
 const closeResultBtn =
     document.getElementById("closeResultBtn");
 
+const addWalletAfterSpinBtn =
+    document.getElementById("addWalletAfterSpinBtn");
+
+const resultWalletNote =
+    document.getElementById("resultWalletNote");
+
 const walletViewBtn =
     document.getElementById("walletViewBtn");
 
 const walletModal =
     document.getElementById("walletModal");
 
+const walletTitle =
+    document.getElementById("walletTitle");
+
+const walletEntry =
+    document.getElementById("walletEntry");
+
+const walletAddressEntry =
+    document.getElementById("walletAddressEntry");
+
+const savedWalletSection =
+    document.getElementById("savedWalletSection");
+
 const savedWalletText =
     document.getElementById("savedWalletText");
+
+const savedTelegramText =
+    document.getElementById("savedTelegramText");
 
 const closeWalletBtn =
     document.getElementById("closeWalletBtn");
@@ -77,6 +103,8 @@ let wallet = "";
 let rotation = 0;
 
 let spinning = false;
+
+const SPIN_COOLDOWN_MS = 30_000;
 
 
 /* =========================
@@ -336,8 +364,6 @@ function createDots() {
 
 function showScreen(screen) {
 
-    walletScreen.classList.add("hidden");
-
     taskScreen.classList.add("hidden");
 
     gameScreen.classList.add("hidden");
@@ -355,6 +381,19 @@ function isSolanaAddress(address) {
 
     return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/
         .test(address);
+
+}
+
+function normalizeTelegramUsername(username) {
+
+    return username.trim().replace(/^@/, "");
+
+}
+
+
+function isTelegramUsername(username) {
+
+    return /^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(username);
 
 }
 
@@ -376,94 +415,30 @@ function checkFirstVisit() {
             "epicoin_tasks_done"
         );
 
+    wallet = savedWallet || "";
 
-    /*
-        Wallet already exists.
+    walletViewBtn.hidden =
+        !wallet &&
+        !localStorage.getItem("epicoin_last_spin") &&
+        !localStorage.getItem("epicoin_next_spin_at");
 
-        User does NOT need to enter it again.
-    */
+    walletViewBtn.textContent =
+        wallet ? "MY WALLET" : "ADD WALLET";
 
-    if (savedWallet) {
-
-        wallet = savedWallet;
+    if (tasksDone === "true") {
 
         showScreen(gameScreen);
 
-        checkDailySpin();
+        updateBalance();
+        checkSpinCooldown();
 
         return;
 
     }
 
-
-    /*
-        First-time user.
-    */
-
-    showScreen(walletScreen);
+    showScreen(taskScreen);
 
 }
-
-
-/* =========================
-   SAVE WALLET
-========================= */
-
-saveWalletBtn.addEventListener(
-    "click",
-    () => {
-
-        walletError.textContent = "";
-
-        const value =
-            walletInput.value.trim();
-
-
-        if (!isSolanaAddress(value)) {
-
-            walletError.textContent =
-                "Please enter a valid Solana wallet address.";
-
-            return;
-
-        }
-
-
-        wallet = value;
-
-
-        /*
-            Save permanently for this browser.
-
-            Later this will be saved in
-            the real database.
-        */
-
-        localStorage.setItem(
-            "epicoin_wallet",
-            wallet
-        );
-
-
-        saveWalletBtn.disabled = true;
-
-        saveWalletBtn.textContent =
-            "SAVED ✓";
-
-
-        setTimeout(() => {
-
-            showScreen(taskScreen);
-
-            saveWalletBtn.disabled = false;
-
-            saveWalletBtn.textContent =
-                "CONTINUE";
-
-        }, 400);
-
-    }
-);
 
 
 /* =========================
@@ -473,7 +448,8 @@ saveWalletBtn.addEventListener(
 const tasks = {
     dex: false,
     telegram: false,
-    x: false
+    x: false,
+    "x-likes": false
 };
 
 
@@ -518,6 +494,23 @@ document
 
                 }
 
+                if (task === "x-likes") {
+
+                    if (!button.dataset.opened) {
+
+                        window.open(
+                            X_LINK,
+                            "_blank"
+                        );
+
+                        button.dataset.opened = "true";
+                        button.textContent = "CONFIRM";
+                        return;
+
+                    }
+
+                }
+
 
                 /*
                     Temporary testing.
@@ -553,9 +546,7 @@ document
 function checkTasks() {
 
     const complete =
-        tasks.dex &&
-        tasks.telegram &&
-        tasks.x;
+        Object.values(tasks).every(Boolean);
 
 
     continueTaskBtn.disabled =
@@ -588,7 +579,7 @@ continueTaskBtn.addEventListener(
 
         showScreen(gameScreen);
 
-        checkDailySpin();
+        checkSpinCooldown();
 
     }
 );
@@ -598,26 +589,140 @@ continueTaskBtn.addEventListener(
    WALLET VIEW
 ========================= */
 
-walletViewBtn.addEventListener(
-    "click",
-    () => {
+function openWalletModal() {
 
-        const savedWallet =
-            localStorage.getItem(
-                "epicoin_wallet"
-            );
+    const savedWallet =
+        localStorage.getItem(
+            "epicoin_wallet"
+        );
 
+    const savedTelegram =
+        localStorage.getItem(
+            "epicoin_telegram_username"
+        );
 
-        if (!savedWallet) return;
+    walletEntry.classList.toggle(
+        "hidden",
+        Boolean(savedWallet && savedTelegram)
+    );
 
+    savedWalletSection.classList.toggle(
+        "hidden",
+        !savedWallet
+    );
+
+    walletAddressEntry.classList.toggle(
+        "hidden",
+        Boolean(savedWallet)
+    );
+
+    walletTitle.textContent =
+        savedWallet
+            ? savedTelegram ? "YOUR ACCOUNT" : "ADD TELEGRAM USERNAME"
+            : "CREATE YOUR ACCOUNT";
+
+    saveWalletBtn.textContent =
+        savedWallet ? "SAVE TELEGRAM" : "SAVE ACCOUNT";
+
+    walletEntry.querySelector(".wallet-note").textContent =
+        savedWallet
+            ? "Add a Telegram username to finish linking your existing wallet."
+            : "Add your Telegram username and Solana wallet to link them to your rewards. These details cannot be changed later.";
+
+    walletError.textContent = "";
+
+    if (savedWallet) {
 
         savedWalletText.textContent =
             savedWallet;
 
+        savedTelegramText.textContent =
+            savedTelegram ? `@${savedTelegram}` : "Not added";
 
-        walletModal.classList.remove(
-            "hidden"
+    } else {
+
+        walletInput.value = "";
+
+    }
+
+    telegramUsernameInput.value =
+        savedTelegram ? `@${savedTelegram}` : "";
+
+    walletModal.classList.remove("hidden");
+
+}
+
+
+walletViewBtn.addEventListener(
+    "click",
+    openWalletModal
+);
+
+
+addWalletAfterSpinBtn.addEventListener(
+    "click",
+    openWalletModal
+);
+
+
+saveWalletBtn.addEventListener(
+    "click",
+    () => {
+
+        walletError.textContent = "";
+
+        const existingWallet =
+            localStorage.getItem("epicoin_wallet");
+
+        const value =
+            existingWallet || walletInput.value.trim();
+
+        const telegramUsername =
+            normalizeTelegramUsername(telegramUsernameInput.value);
+
+        if (!isTelegramUsername(telegramUsername)) {
+
+            walletError.textContent =
+                "Enter a valid Telegram username (5-32 letters, numbers, or underscores).";
+
+            return;
+
+        }
+
+        if (!existingWallet && !isSolanaAddress(value)) {
+
+            walletError.textContent =
+                "Please enter a valid Solana wallet address.";
+
+            return;
+
+        }
+
+        wallet = value;
+
+        localStorage.setItem(
+            "epicoin_wallet",
+            wallet
         );
+
+        localStorage.setItem(
+            "epicoin_telegram_username",
+            telegramUsername
+        );
+
+        localStorage.setItem(
+            "epicoin_last_wallet",
+            wallet
+        );
+
+        savedWalletText.textContent = wallet;
+        savedTelegramText.textContent =
+            `@${telegramUsername}`;
+        walletTitle.textContent = "YOUR ACCOUNT";
+        walletEntry.classList.add("hidden");
+        savedWalletSection.classList.remove("hidden");
+        walletAddressEntry.classList.add("hidden");
+        walletViewBtn.textContent = "MY WALLET";
 
     }
 );
@@ -645,39 +750,86 @@ closeWalletBtn2.addEventListener(
 
 
 /* =========================
-   DAILY SPIN
+   BALANCE AND SPIN COOLDOWN
 ========================= */
 
-function checkDailySpin() {
+function getPrizeValue(prize) {
 
-    const today =
-        new Date()
-            .toISOString()
-            .split("T")[0];
+    const jackpotValues = {
+        mini: 20_000,
+        major: 50_000,
+        grand: 100_000
+    };
+
+    if (prize.type !== "normal") {
+        return jackpotValues[prize.type];
+    }
+
+    const match = prize.name.match(/^(\d+)K \$POT$/);
+
+    if (!match) {
+        throw new Error(`Unknown prize value: ${prize.name}`);
+    }
+
+    return Number(match[1]) * 1_000;
+
+}
 
 
-    const lastSpin =
-        localStorage.getItem(
-            "epicoin_last_spin"
-        );
+function updateBalance(prizeValue = 0) {
+
+    const storedBalance =
+        Number(localStorage.getItem("epicoin_balance_pot") || 0);
+
+    const balance =
+        storedBalance + prizeValue;
+
+    localStorage.setItem(
+        "epicoin_balance_pot",
+        String(balance)
+    );
+
+    balanceAmount.textContent =
+        `${balance.toLocaleString()} $POT`;
+
+}
 
 
-    if (lastSpin === today) {
+function checkSpinCooldown() {
+
+    const nextSpinAt =
+        Number(localStorage.getItem("epicoin_next_spin_at") || 0);
+
+    const secondsRemaining =
+        Math.max(0, Math.ceil((nextSpinAt - Date.now()) / 1000));
+
+    if (spinning) {
 
         spinBtn.disabled = true;
-
-        spinBtn.textContent =
-            "COME BACK TOMORROW";
-
-
-        document.getElementById(
-            "spinStatus"
-        ).textContent =
-            "ALREADY USED";
+        spinBtn.textContent = "SPINNING...";
+        document.getElementById("spinStatus").textContent = "SPINNING";
+        return;
 
     }
 
+    if (secondsRemaining > 0) {
+
+        spinBtn.disabled = true;
+        spinBtn.textContent = `SPIN AGAIN IN ${secondsRemaining}s`;
+        document.getElementById("spinStatus").textContent =
+            `WAIT ${secondsRemaining}s`;
+        return;
+
+    }
+
+    spinBtn.disabled = false;
+    spinBtn.textContent = "SPIN THE WHEEL";
+    document.getElementById("spinStatus").textContent = "AVAILABLE";
+
 }
+
+
+setInterval(checkSpinCooldown, 1000);
 
 
 /* =========================
@@ -755,23 +907,12 @@ spinBtn.addEventListener(
         if (spinning) return;
 
 
-        const today =
-            new Date()
-                .toISOString()
-                .split("T")[0];
+        const nextSpinAt =
+            Number(localStorage.getItem("epicoin_next_spin_at") || 0);
 
+        if (nextSpinAt > Date.now()) {
 
-        const lastSpin =
-            localStorage.getItem(
-                "epicoin_last_spin"
-            );
-
-
-        if (lastSpin === today) {
-
-            gameMessage.textContent =
-                "You have already spun today.";
-
+            checkSpinCooldown();
             return;
 
         }
@@ -791,6 +932,9 @@ spinBtn.addEventListener(
 
         const prize =
             prizes[slot];
+
+        const prizeValue =
+            getPrizeValue(prize);
 
 
         const target =
@@ -813,15 +957,20 @@ spinBtn.addEventListener(
         setTimeout(() => {
 
             localStorage.setItem(
-                "epicoin_last_spin",
-                today
+                "epicoin_next_spin_at",
+                String(Date.now() + SPIN_COOLDOWN_MS)
             );
 
+            updateBalance(prizeValue);
 
-            localStorage.setItem(
-                "epicoin_last_wallet",
-                wallet
-            );
+            if (wallet) {
+
+                localStorage.setItem(
+                    "epicoin_last_wallet",
+                    wallet
+                );
+
+            }
 
 
             localStorage.setItem(
@@ -839,25 +988,29 @@ spinBtn.addEventListener(
             prizeText.textContent =
                 prize.name;
 
+            resultWalletNote.textContent =
+                wallet
+                    ? "Your saved wallet is linked to this reward."
+                    : "You can add a wallet later to link it to your reward.";
+
+            addWalletAfterSpinBtn.hidden =
+                Boolean(wallet);
+
+            walletViewBtn.hidden = false;
+
+            walletViewBtn.textContent =
+                wallet ? "MY WALLET" : "ADD WALLET";
+
 
             resultModal.classList.remove(
                 "hidden"
             );
 
 
-            document.getElementById(
-                "spinStatus"
-            ).textContent =
-                "ALREADY USED";
-
-
-            spinBtn.textContent =
-                "COME BACK TOMORROW";
-
-
             gameMessage.textContent = "";
 
             spinning = false;
+            checkSpinCooldown();
 
         }, 4900);
 
@@ -887,4 +1040,8 @@ closeResultBtn.addEventListener(
 
 createWheel();
 
+updateBalance();
+
 checkFirstVisit();
+
+checkSpinCooldown();

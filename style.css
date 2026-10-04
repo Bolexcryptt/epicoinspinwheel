@@ -4,6 +4,14 @@
     padding: 0;
 }
 
+:root {
+    color-scheme: dark;
+    --accent-cyan: #38e8e1;
+    --accent-blue: #5595ff;
+    --accent-purple: #a66bff;
+    --accent-gold: #ffd84d;
+}
+
 html,
 body {
     min-height: 100%;
@@ -12,7 +20,9 @@ body {
 body {
     min-height: 100vh;
     background:
-        radial-gradient(circle at 50% 10%, #292b31 0%, #111216 40%, #07080a 100%);
+        radial-gradient(ellipse at 12% 18%, rgba(63, 119, 255, .2), transparent 34%),
+        radial-gradient(ellipse at 88% 32%, rgba(167, 83, 255, .15), transparent 32%),
+        radial-gradient(circle at 50% 10%, #25283a 0%, #10121b 46%, #07080c 100%);
     color: #fff;
     font-family: Arial, Helvetica, sans-serif;
 }
@@ -63,6 +73,10 @@ button {
 .header h1 {
     font-size: 25px;
     font-weight: 950;
+    background: linear-gradient(90deg, #fff 10%, var(--accent-cyan) 48%, #d9bcff 90%);
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 16px rgba(56,232,225,.22));
 }
 
 .header p {
@@ -77,11 +91,11 @@ button {
 ========================= */
 
 .card {
-    background: rgba(255,255,255,.055);
-    border: 1px solid rgba(255,255,255,.12);
+    background: linear-gradient(145deg, rgba(44,51,77,.84), rgba(19,21,32,.94));
+    border: 1px solid rgba(99,167,255,.26);
     border-radius: 20px;
     padding: 23px;
-    box-shadow: 0 15px 45px rgba(0,0,0,.3);
+    box-shadow: 0 15px 45px rgba(0,0,0,.3), 0 0 32px rgba(76,121,255,.1);
 }
 
 .card h2 {
@@ -105,17 +119,18 @@ input {
     margin-top: 20px;
     padding: 15px;
 
-    background: #0d0e12;
+    background: rgba(8,11,20,.88);
     color: white;
 
-    border: 1px solid #333;
+    border: 1px solid rgba(123,151,205,.35);
     border-radius: 12px;
 
     outline: none;
 }
 
 input:focus {
-    border-color: #777;
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 0 3px rgba(56,232,225,.12), 0 0 20px rgba(56,232,225,.12);
 }
 
 
@@ -131,10 +146,18 @@ input:focus {
     border: none;
     border-radius: 12px;
 
-    background: white;
-    color: #111;
+    background: linear-gradient(100deg, var(--accent-cyan), #a7f5ce);
+    color: #071316;
 
     font-weight: 900;
+    box-shadow: 0 6px 22px rgba(56,232,225,.2);
+    transition: transform .16s ease, filter .16s ease, box-shadow .16s ease;
+}
+
+.main-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    filter: brightness(1.08);
+    box-shadow: 0 8px 26px rgba(56,232,225,.3);
 }
 
 .main-btn:disabled {
@@ -183,14 +206,15 @@ input:focus {
     border: none;
     border-radius: 10px;
 
-    background: white;
-    color: #111;
+    background: linear-gradient(135deg, #e5d2ff, #a8c8ff);
+    color: #121426;
 
     font-weight: 800;
 }
 
 .taskBtn.completed {
-    background: #39d77a;
+    background: linear-gradient(135deg, #39e5a1, #38e8e1);
+    box-shadow: 0 0 18px rgba(56,232,161,.22);
 }
 
 .task-message {
@@ -221,8 +245,8 @@ input:focus {
 }
 
 .wallet-view-btn {
-    border: 1px solid rgba(255,255,255,.15);
-    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(56,232,225,.36);
+    background: linear-gradient(135deg, rgba(56,232,225,.15), rgba(166,107,255,.15));
     color: white;
     padding: 8px 12px;
     border-radius: 8px;
@@ -232,7 +256,8 @@ input:focus {
 }
 
 .wallet-view-btn:hover {
-    background: rgba(255,255,255,.12);
+    background: linear-gradient(135deg, rgba(56,232,225,.28), rgba(166,107,255,.27));
+    box-shadow: 0 0 18px rgba(56,232,225,.16);
 }
 
 #spinStatus {
@@ -267,6 +292,8 @@ input:focus {
 
     box-shadow:
         0 0 0 5px #111216,
+        0 0 0 8px rgba(76,151,255,.46),
+        0 0 32px rgba(56,232,225,.25),
         0 15px 35px rgba(0,0,0,.55);
 
     transition:
@@ -338,7 +365,8 @@ input:focus {
     z-index: 30;
     box-shadow:
         0 5px 15px rgba(0,0,0,.7),
-        0 0 0 3px #5c5d61;
+        0 0 0 3px #5c5d61,
+        0 0 22px rgba(56,232,225,.25);
 }
 
 .wheel-center img {
@@ -387,9 +415,9 @@ input:focus {
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: #f0dc36;
-    border: 1px solid #9e9219;
-    box-shadow: 0 1px 4px rgba(0,0,0,.8);
+    background: #fff173;
+    border: 1px solid #ffc83d;
+    box-shadow: 0 0 11px rgba(255,216,77,.95), 0 1px 4px rgba(0,0,0,.8);
     transform: translate(-50%, -50%);
     z-index: 40;
 }
@@ -412,19 +440,16 @@ input:focus {
     border-radius: 13px;
 
     background:
-        linear-gradient(
-            180deg,
-            #ffffff,
-            #d5d5d5
-        );
+        linear-gradient(105deg, #8df4e8, #d6ff94 42%, #ffe475 72%, #e1b8ff);
 
-    color: #111;
+    color: #111321;
 
     font-size: 17px;
     font-weight: 950;
 
     box-shadow:
-        0 5px 0 #888;
+        0 5px 0 #8e789c,
+        0 8px 26px rgba(255,216,77,.2);
 
     transition: .1s;
 }
@@ -437,6 +462,30 @@ input:focus {
 .spin-btn:disabled {
     opacity: .4;
     cursor: not-allowed;
+}
+
+.balance-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: min(94vw, 590px);
+    margin: 14px auto 0;
+    padding: 13px 17px;
+    border: 1px solid rgba(255,216,77,.32);
+    border-radius: 12px;
+    background: linear-gradient(100deg, rgba(56,232,225,.1), rgba(166,107,255,.12), rgba(255,216,77,.1));
+    color: #d6d9e8;
+    box-shadow: 0 0 22px rgba(166,107,255,.1);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+
+.balance-display strong {
+    color: var(--accent-gold);
+    font-size: 15px;
+    letter-spacing: .3px;
+    text-shadow: 0 0 14px rgba(255,216,77,.35);
 }
 
 
@@ -453,9 +502,11 @@ input:focus {
 
     border-radius: 16px;
 
-    background: rgba(255,255,255,.045);
+    background: linear-gradient(145deg, rgba(34,38,55,.82), rgba(17,19,28,.94));
 
-    border: 1px solid rgba(255,255,255,.1);
+    border: 1px solid rgba(166,107,255,.23);
+
+    box-shadow: 0 10px 35px rgba(0,0,0,.22), 0 0 24px rgba(166,107,255,.08);
 
     text-align: center;
 }
@@ -502,15 +553,18 @@ input:focus {
 }
 
 .jackpot.mini {
-    border: 1px solid #aaa;
+    border: 1px solid rgba(56,232,225,.6);
+    box-shadow: inset 0 0 18px rgba(56,232,225,.08), 0 0 15px rgba(56,232,225,.1);
 }
 
 .jackpot.major {
-    border: 1px solid #d69b35;
+    border: 1px solid rgba(255,171,74,.7);
+    box-shadow: inset 0 0 18px rgba(255,171,74,.08), 0 0 15px rgba(255,171,74,.1);
 }
 
 .jackpot.grand {
-    border: 1px solid #e7c943;
+    border: 1px solid rgba(255,216,77,.75);
+    box-shadow: inset 0 0 18px rgba(255,216,77,.1), 0 0 15px rgba(255,216,77,.12);
 }
 
 .jackpot-note {
@@ -553,7 +607,8 @@ input:focus {
 
     padding: 20px;
 
-    background: rgba(0,0,0,.84);
+    background: rgba(5,7,15,.82);
+    backdrop-filter: blur(9px);
 }
 
 .modal-card {
@@ -563,14 +618,15 @@ input:focus {
 
     text-align: center;
 
-    background: #17181c;
+    background: linear-gradient(145deg, #25263c, #13151f 72%);
 
-    border: 1px solid rgba(255,255,255,.14);
+    border: 1px solid rgba(111,180,255,.32);
 
     border-radius: 22px;
 
     box-shadow:
-        0 25px 70px rgba(0,0,0,.7);
+        0 25px 70px rgba(0,0,0,.7),
+        0 0 45px rgba(97,107,255,.16);
 }
 
 .modal-card img {
@@ -603,6 +659,8 @@ input:focus {
 .wallet-card {
     position: relative;
     text-align: center;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
 }
 
 .wallet-card img {
@@ -610,6 +668,7 @@ input:focus {
     height: 75px;
     object-fit: contain;
     margin-bottom: 10px;
+    filter: drop-shadow(0 0 17px rgba(56,232,225,.26));
 }
 
 .close-modal {
@@ -628,19 +687,51 @@ input:focus {
     color: #aaa;
     font-weight: 900;
     letter-spacing: 2px;
+    color: #d8c5ff;
+}
+
+.wallet-field-label {
+    display: block;
+    margin-top: 16px;
+    color: #b9c9ed;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 1.3px;
+    text-align: left;
+}
+
+.wallet-field-label + input {
+    margin-top: 7px;
 }
 
 .saved-wallet {
     margin-top: 15px;
     padding: 14px;
-    background: #0b0c0f;
-    border: 1px solid #333;
+    background: rgba(8,11,20,.8);
+    border: 1px solid rgba(123,151,205,.3);
     border-radius: 10px;
     word-break: break-all;
     color: white;
     font-size: 12px;
     line-height: 1.5;
     user-select: text;
+}
+
+.saved-wallet span,
+.saved-wallet strong {
+    display: block;
+}
+
+.saved-wallet span {
+    margin-bottom: 6px;
+    color: #9daed0;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 1.2px;
+}
+
+.saved-wallet strong {
+    font-weight: 500;
 }
 
 .wallet-note {
