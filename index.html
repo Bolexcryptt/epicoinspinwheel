@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#111111">
+    <title>Epicoin Spin Wheel</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="app">
+
+    <header class="header">
+        <img src="logo.png" class="logo" alt="Epicoin">
+
+        <h1>EPICOIN SPIN WHEEL</h1>
+
+        <p>Spin once every day. Test your luck.</p>
+    </header>
+
+
+    <!-- WALLET -->
+
+    <section id="walletScreen" class="screen">
+
+        <div class="card">
+
+            <h2>Enter your Solana wallet</h2>
+
+            <p class="muted">
+                Your wallet will be used to receive your $POT reward.
+            </p>
+
+            <input
+                id="walletInput"
+                type="text"
+                placeholder="Solana wallet address"
+                autocomplete="off"
+            >
+
+            <button id="saveWalletBtn" class="main-btn">
+                CONTINUE
+            </button>
+
+            <p id="walletError" class="error"></p>
+
+        </div>
+
+    </section>
+
+
+    <!-- TASKS -->
+
+    <section id="taskScreen" class="screen hidden">
+
+        <div class="card">
+
+            <h2>Complete the tasks</h2>
+
+            <p class="muted">
+                Complete the community tasks before your first spin.
+            </p>
+
+
+            <div class="task">
+
+                <div>
+                    <strong>Vote on Dex</strong>
+                    <span>Support Epicoin on Dexscreener</span>
+                </div>
+
+                <button class="taskBtn" data-task="dex">
+                    OPEN
+                </button>
+
+            </div>
+
+
+            <div class="task">
+
+                <div>
+                    <strong>Join Telegram</strong>
+                    <span>Join the Epicoin community</span>
+                </div>
+
+                <button class="taskBtn" data-task="telegram">
+                    OPEN
+                </button>
+
+            </div>
+
+
+            <div class="task">
+
+                <div>
+                    <strong>Follow X</strong>
+                    <span>Follow @epicoinai</span>
+                </div>
+
+                <button class="taskBtn" data-task="x">
+                    OPEN
+                </button>
+
+            </div>
+
+
+            <button
+                id="continueTaskBtn"
+                class="main-btn"
+                disabled
+            >
+                CONTINUE
+            </button>
+
+            <p id="taskMessage" class="muted task-message"></p>
+
+        </div>
+
+    </section>
+
+
+    <!-- GAME -->
+
+    <section id="gameScreen" class="screen hidden">
+
+        <div class="game-top">
+
+            <span>DAILY SPIN</span>
+
+            <button id="walletViewBtn" class="wallet-view-btn">
+                MY WALLET
+            </button>
+
+            <span id="spinStatus">
+                AVAILABLE
+            </span>
+
+        </div>
+
+
+        <div class="wheel-wrapper">
+
+            <div class="pointer">
+                <div class="pointer-inner"></div>
+            </div>
+
+            <div id="wheel" class="wheel">
+
+                <div id="wheelLabels"></div>
+
+                <div class="wheel-center">
+                    <img src="logo.png" alt="Epicoin">
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <button id="spinBtn" class="spin-btn">
+            SPIN THE WHEEL
+        </button>
+
+
+        <div class="jackpots">
+
+            <h3>JACKPOTS</h3>
+
+            <div class="jackpot-list">
+
+                <div class="jackpot mini">
+                    <span>MINI JACKPOT</span>
+                    <strong>20K $POT</strong>
+                </div>
+
+                <div class="jackpot major">
+                    <span>MAJOR JACKPOT</span>
+                    <strong>50K $POT</strong>
+                </div>
+
+                <div class="jackpot grand">
+                    <span>GRAND JACKPOT</span>
+                    <strong>100K $POT</strong>
+                </div>
+
+            </div>
+
+            <p class="jackpot-note">
+                Jackpots are extremely rare.
+            </p>
+
+        </div>
+
+
+        <p id="gameMessage" class="game-message"></p>
+
+    </section>
+
+
+    <!-- RESULT -->
+
+    <div id="resultModal" class="modal hidden">
+
+        <div class="modal-card">
+
+            <img src="logo.png" alt="Epicoin">
+
+            <p>YOU WON</p>
+
+            <h2 id="prizeText"></h2>
+
+            <p class="muted">
+                Your reward has been recorded.
+            </p>
+
+            <button id="closeResultBtn" class="main-btn">
+                DONE
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- SAVED WALLET -->
+
+<div id="walletModal" class="modal hidden">
+
+    <div class="modal-card wallet-card">
+
+        <button id="closeWalletBtn" class="close-modal">
+            ×
+        </button>
+
+        <img src="logo.png" alt="Epicoin">
+
+        <p class="wallet-title">
+            YOUR WALLET
+        </p>
+
+        <div class="saved-wallet">
+            <span id="savedWalletText"></span>
+        </div>
+
+        <p class="wallet-note">
+            This wallet is locked and cannot be changed.
+        </p>
+
+        <button id="closeWalletBtn2" class="main-btn">
+            CLOSE
+        </button>
+
+    </div>
+
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
