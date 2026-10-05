@@ -92,8 +92,6 @@ let rotation = 0;
 
 let spinning = false;
 
-const SPIN_COOLDOWN_MS = 30_000;
-
 
 /* =========================
    16 PRIZES
@@ -372,6 +370,55 @@ function isSolanaAddress(address) {
 
 }
 
+async function apiRequest(path, body) {
+
+    if (window.location.protocol === "file:") {
+        throw new Error(
+            "This local file cannot reach the game API. Open the deployed Vercel site or run the project with `vercel dev`."
+        );
+    }
+
+    let response;
+    try {
+        response = await fetch(path, {
+            method: "POST",
+            credentials: "same-origin",
+            signal: AbortSignal.timeout(15_000),
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(body)
+        });
+    } catch (error) {
+        if (error.name === "TimeoutError") {
+            throw new Error(
+                "The game server took too long to respond. Your spin may have been recorded; wait a moment and try again."
+            );
+        }
+        throw new Error(
+            "Could not reach the game server. Check your connection and confirm the deployed Vercel site is available."
+        );
+    }
+
+    let result;
+    try {
+        result = await response.json();
+    } catch (error) {
+        throw new Error(
+            `The game API returned an invalid response (HTTP ${response.status}). Confirm the Vercel deployment includes the API functions and is configured correctly.`
+        );
+    }
+
+    if (!response.ok) {
+        const error = new Error(result.error || "The request failed.");
+        error.retryAfter = result.retryAfter;
+        throw error;
+    }
+
+    return result;
+
+}
+
 /* =========================
    FIRST VISIT CHECK
 ========================= */
@@ -403,7 +450,7 @@ function checkFirstVisit() {
 
         showScreen(gameScreen);
 
-        updateBalance();
+        updateBalance(Number(localStorage.getItem("epicoin_balance_pot") || 0));
         checkSpinCooldown();
 
         return;
@@ -626,34 +673,49 @@ saveWalletBtn.addEventListener(
 
         }
 
-        wallet = address;
+        const spinId =
+            localStorage.getItem("epicoin_last_spin_id");
 
-        localStorage.setItem(
-            "epicoin_wallet",
-            wallet
-        );
+        if (!spinId) {
+            walletError.textContent =
+                "Complete a spin before submitting your details.";
+            return;
+        }
 
-        localStorage.setItem(
-            "epicoin_player_name",
-            name
-        );
+        saveWalletBtn.disabled = true;
 
-        localStorage.setItem(
-            "epicoin_player_email",
-            email
-        );
+        apiRequest("/api/submit-details", {
+            spinId,
+            name,
+            email,
+            wallet: address
+        })
+            .then(result => {
+                wallet = address;
+                localStorage.setItem("epicoin_wallet", wallet);
+                localStorage.setItem("epicoin_player_name", name);
+                localStorage.setItem("epicoin_player_email", email);
+                localStorage.setItem("epicoin_last_wallet", wallet);
 
-        localStorage.setItem(
-            "epicoin_last_wallet",
-            wallet
-        );
+                if (Number.isFinite(result.balance)) {
+                    updateBalance(result.balance);
+                }
 
-        walletTitle.textContent = "YOUR PLAYER DETAILS";
-        walletViewBtn.textContent = "MY DETAILS";
-        addWalletAfterSpinBtn.textContent = "EDIT DETAILS";
-        walletError.textContent =
-            "Details saved in this browser. Nothing was sent to a backend.";
-        walletError.classList.add("success");
+                walletTitle.textContent = "YOUR PLAYER DETAILS";
+                walletViewBtn.textContent = "MY DETAILS";
+                addWalletAfterSpinBtn.textContent = "EDIT DETAILS";
+                walletError.textContent = result.emailSent
+                    ? "Details saved. Email notification sent."
+                    : result.emailError || "Details saved, but the notification email was not sent.";
+                walletError.classList.add("success");
+            })
+            .catch(error => {
+                walletError.textContent = error.message;
+                walletError.classList.remove("success");
+            })
+            .finally(() => {
+                saveWalletBtn.disabled = false;
+            });
 
     }
 );
@@ -684,37 +746,7 @@ closeWalletBtn2.addEventListener(
    BALANCE AND SPIN COOLDOWN
 ========================= */
 
-function getPrizeValue(prize) {
-
-    const jackpotValues = {
-        mini: 20_000,
-        major: 50_000,
-        grand: 500_000
-    };
-
-    if (prize.type !== "normal") {
-        return jackpotValues[prize.type];
-    }
-
-    const match = prize.name.match(/^(\d+)K \$POT$/);
-
-    if (!match) {
-        throw new Error(`Unknown prize value: ${prize.name}`);
-    }
-
-    return Number(match[1]) * 1_000;
-
-}
-
-
-function updateBalance(prizeValue = 0) {
-
-    const storedBalance =
-        Number(localStorage.getItem("epicoin_balance_pot") || 0);
-
-    const balance =
-        storedBalance + prizeValue;
-
+function updateBalance(balance) {
     localStorage.setItem(
         "epicoin_balance_pot",
         String(balance)
@@ -764,76 +796,12 @@ setInterval(checkSpinCooldown, 1000);
 
 
 /* =========================
-   TEST PRIZE
-========================= */
-
-function choosePrize() {
-
-    /*
-        TEST ONLY.
-
-        Jackpots are extremely rare.
-
-        Production will move this
-        calculation to the backend.
-    */
-
-    const roll =
-        Math.random();
-
-
-    if (roll < 0.0001) {
-
-        return prizes.findIndex(
-            prize => prize.type === "grand"
-        );
-        // GRAND
-
-    }
-
-
-    if (roll < 0.001) {
-
-        return prizes.findIndex(
-            prize => prize.type === "major"
-        );
-        // MAJOR
-
-    }
-
-
-    if (roll < 0.003) {
-
-        return prizes.findIndex(
-            prize => prize.type === "mini"
-        );
-        // MINI
-
-    }
-
-
-    const normalSlots = prizes
-        .map((prize, index) => prize.type === "normal" ? index : -1)
-        .filter(index => index !== -1);
-
-
-    return normalSlots[
-        Math.floor(
-            Math.random() *
-            normalSlots.length
-        )
-    ];
-
-}
-
-
-/* =========================
    SPIN
 ========================= */
 
 spinBtn.addEventListener(
     "click",
-    () => {
+    async () => {
 
         if (spinning) return;
 
@@ -857,16 +825,47 @@ spinBtn.addEventListener(
             "SPINNING...";
 
 
-        const slot =
-            choosePrize();
+        let spin;
+        try {
+            let requestId =
+                localStorage.getItem("epicoin_pending_spin_request_id");
 
+            if (!requestId) {
+                requestId = crypto.randomUUID();
+                localStorage.setItem(
+                    "epicoin_pending_spin_request_id",
+                    requestId
+                );
+            }
 
-        const prize =
-            prizes[slot];
+            const walletAddress =
+                localStorage.getItem("epicoin_wallet") || "";
+            const name =
+                localStorage.getItem("epicoin_player_name") || "";
+            const email =
+                localStorage.getItem("epicoin_player_email") || "";
 
-        const prizeValue =
-            getPrizeValue(prize);
+            spin = await apiRequest("/api/spin", {
+                requestId,
+                wallet: walletAddress,
+                name,
+                email
+            });
+        } catch (error) {
+            if (error.retryAfter) {
+                localStorage.setItem(
+                    "epicoin_next_spin_at",
+                    String(Date.now() + error.retryAfter * 1000)
+                );
+            }
+            gameMessage.textContent = error.message;
+            spinning = false;
+            checkSpinCooldown();
+            return;
+        }
 
+        const slot = spin.slot;
+        const prizeName = spin.prize;
 
         const target =
             360 -
@@ -884,15 +883,14 @@ spinBtn.addEventListener(
         wheel.style.transform =
             `rotate(${rotation}deg)`;
 
-
         setTimeout(() => {
 
             localStorage.setItem(
                 "epicoin_next_spin_at",
-                String(Date.now() + SPIN_COOLDOWN_MS)
+                String(new Date(spin.nextSpinAt).getTime())
             );
 
-            updateBalance(prizeValue);
+            updateBalance(spin.balance);
 
             if (wallet) {
 
@@ -906,23 +904,28 @@ spinBtn.addEventListener(
 
             localStorage.setItem(
                 "epicoin_last_prize",
-                prize.name
+                prizeName
             );
-
 
             localStorage.setItem(
                 "epicoin_last_slot",
                 slot
             );
 
+            localStorage.setItem(
+                "epicoin_last_spin_id",
+                spin.spinId
+            );
+            localStorage.removeItem("epicoin_pending_spin_request_id");
 
             prizeText.textContent =
-                prize.name;
+                prizeName;
 
             resultWalletNote.textContent =
-                wallet
-                    ? "Your player details are saved in this browser."
-                    : "Submit your details later to associate them with your rewards.";
+                spin.emailError ||
+                (spin.needsDetails
+                    ? "Submit your player details to link this spin and send its notification."
+                    : "Your spin was recorded by the server.");
 
             addWalletAfterSpinBtn.hidden = false;
             addWalletAfterSpinBtn.textContent =
@@ -972,7 +975,7 @@ closeResultBtn.addEventListener(
 
 createWheel();
 
-updateBalance();
+updateBalance(Number(localStorage.getItem("epicoin_balance_pot") || 0));
 
 checkFirstVisit();
 
